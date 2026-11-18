@@ -153,5 +153,7 @@ $('editor').addEventListener('input',e=>{const form=e.target.closest('form');if(
 $('editor').addEventListener('submit',async e=>{e.preventDefault();await storeForm(e.target)});
 $('editor').addEventListener('click',async e=>{if(e.target.id==='print'){if(dirty())return msg('Salve suas alterações antes de imprimir.',true);window.print()}if(e.target.id==='refresh'&&!dirty()){await load();msg('Dados atualizados.')}});
 window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue=''}});
-init();
-</script></body></html>
+</script>
+<script src="melhorias.js"></script>
+</body>
+</html>
