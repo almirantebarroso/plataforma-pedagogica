@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plataforma Pedagógica | Conselho de Classe</title>
+<style>
+:root{font:16px/1.5 system-ui,-apple-system,sans-serif;color:#1c334e;background:#f3f6fa;--navy:#17314d;--blue:#245cba;--line:#dae3ee;--muted:#596c80}
+*{box-sizing:border-box}body{margin:0}header{background:var(--navy);color:#fff;padding:22px max(16px,calc((100% - 1100px)/2))}h1{font-size:clamp(1.5rem,3vw,2rem);margin:3px 0}h2{font-size:1.25rem;margin:0 0 12px}h3{font-size:1.06rem;margin:0 0 12px}p{margin:8px 0}header p{color:#d8e5f7}nav{max-width:1100px;margin:auto;display:flex;flex-wrap:wrap;gap:8px;padding:16px 16px 0}main{max-width:1100px;margin:auto;padding:16px}button,input,textarea,select{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:white;border-radius:9px;padding:9px 13px;color:var(--navy);font-weight:650}button.primary,button[aria-current=page]{background:var(--blue);border-color:var(--blue);color:#fff}button:disabled{opacity:.5;cursor:wait}input:not([type=checkbox]),select,textarea{width:100%;padding:9px;border:1px solid #adbdce;border-radius:8px;background:white;color:inherit}textarea{resize:vertical}label{font-weight:600;display:block}label input,label select,label textarea{margin-top:4px}.card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:clamp(14px,2.5vw,23px);margin:0 0 15px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:12px}.actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 0}.muted,small{color:var(--muted)}.hint{background:#eaf1fb;border:1px solid #cbdcf4;border-radius:10px;padding:10px 12px;margin:0 0 15px}.demo{background:#fff5df;border:1px solid #ead39c;border-radius:10px;padding:11px 13px;margin-bottom:14px}.status{min-height:1.8rem;font-weight:650;color:#165843}.status.error{color:#ac3737}.chip{background:#eaf1fb;border-radius:8px;padding:4px 9px;display:inline-block;margin:2px}.assessment,.report-table{width:100%;border-collapse:collapse}.assessment th,.assessment td,.report-table th,.report-table td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:middle}.assessment thead,.report-table thead{background:#eaf1fb}.assessment th:not(:first-child),.assessment td:not(:first-child){text-align:center;width:65px}.assessment input{width:20px;height:20px;accent-color:var(--blue)}.assessment label{display:block;text-align:center}.skill{display:grid;grid-template-columns:1fr 170px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-weight:400}.check{display:flex;align-items:baseline;gap:9px;font-weight:400;margin:7px 0}.report-text{white-space:pre-wrap;overflow-wrap:anywhere}.row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.item{padding:8px 0;border-bottom:1px solid var(--line)}.hide{display:none!important}.save-feedback:not(:empty){color:#146044;font-weight:700}.danger{color:#b12d2d}.printonly{display:none}.tag{font-size:.78rem;border-radius:100px;background:#e3f0fa;padding:3px 9px;color:#285174;font-weight:700}table{max-width:100%;} .scroll{overflow-x:auto}details summary{cursor:pointer;font-weight:700} @media(max-width:540px){.skill{grid-template-columns:1fr}.assessment{font-size:.83rem}.assessment th,.assessment td{padding:5px}.assessment th:not(:first-child),.assessment td:not(:first-child){width:40px}}
+@media print{@page{size:A4;margin:13mm}body{background:#fff;color:#000;font-size:10pt}header,nav,#message,#controls,#editor,.hide-print,.demo,.hint{display:none!important}main{padding:0}#report{display:block!important}#report .card{border:0;padding:0;margin:0 0 12px}h2,h3{break-after:avoid}tr{break-inside:avoid}.printonly{display:block}}
+</style></head><body>
+<header><small style="color:#c5d9f5">Escola Municipal Almirante Barroso · Ano letivo 2026</small><h1>Plataforma Pedagógica</h1><p>Conselho de Classe Final e demonstração de registros de conduta</p></header>
+<nav aria-label="Áreas"><button data-page="prof" aria-current="page">Área do professor</button><button data-page="dir">Conselho de classe</button><button data-page="cad">Cadastros</button><button data-page="conduta">Conduta <span class="tag">Demo</span></button></nav>
+<main><div id="connection" class="hint">Conectando ao banco de dados online…</div><div id="demo-warning" class="demo"><strong>Registros de conduta: demonstração.</strong> Somente exemplos fictícios. Não use esta área para ocorrências reais.</div><p id="message" class="status" role="status" aria-live="polite"></p><div id="controls"></div><div id="editor"></div><article id="report"></article></main>
+<script src="config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+const subjects = {
+  "Língua Portuguesa": [
+    "Realiza leitura com fluência e compreensão.",
+    "Identifica o tema e a ideia principal dos textos.",
+    "Localiza informações explícitas e identifica informações implícitas.",
+    "Realiza inferências a partir de textos.",
+    "Identifica a finalidade e o gênero textual.",
+    "Reconhece a opinião e os argumentos apresentados.",
+    "Produz textos com coerência e coesão.",
+    "Utiliza adequadamente a ortografia e a pontuação.",
+    "Organiza ideias em parágrafos.",
+    "Expressa-se oralmente com clareza e organização."
+  ],
+  "Matemática": [
+    "Realiza operações fundamentais com números naturais.",
+    "Compreende e opera com números inteiros, racionais e decimais.",
+    "Resolve situações-problema envolvendo as quatro operações.",
+    "Compreende frações e suas representações.",
+    "Resolve problemas envolvendo porcentagem e proporcionalidade.",
+    "Compreende expressões numéricas e algébricas.",
+    "Identifica figuras geométricas e suas propriedades.",
+    "Calcula perímetro, área e volume.",
+    "Interpreta tabelas, gráficos e dados estatísticos.",
+    "Utiliza o raciocínio lógico na resolução de problemas."
+  ],
+  "Ciências": [
+    "Compreende conceitos científicos relacionados ao corpo humano e à saúde.",
+    "Reconhece a importância da preservação ambiental.",
+    "Compreende fenômenos naturais e suas transformações.",
+    "Relaciona ciência, tecnologia e sociedade.",
+    "Interpreta informações e dados científicos.",
+    "Formula hipóteses e apresenta explicações para fenômenos."
+  ],
+  "História": [
+    "Compreende a organização das sociedades em diferentes tempos históricos.",
+    "Identifica mudanças e permanências históricas.",
+    "Compreende relações de causa e consequência dos acontecimentos.",
+    "Interpreta documentos e fontes históricas.",
+    "Reconhece a diversidade cultural e social.",
+    "Desenvolve posicionamento crítico sobre fatos históricos."
+  ],
+  "Geografia": [
+    "Compreende os conceitos de espaço geográfico, território e paisagem.",
+    "Localiza-se e interpreta informações cartográficas.",
+    "Interpreta mapas, gráficos e tabelas.",
+    "Compreende as relações entre sociedade e natureza.",
+    "Identifica aspectos econômicos, sociais e culturais dos territórios.",
+    "Analisa problemas socioambientais."
+  ],
+  "Língua Inglesa": [
+    "Reconhece vocabulário e expressões do cotidiano.",
+    "Compreende informações em textos simples.",
+    "Identifica palavras e expressões em diferentes contextos.",
+    "Desenvolve a compreensão oral.",
+    "Produz frases e pequenos textos.",
+    "Participa de situações de comunicação em língua inglesa."
+  ],
+  "Arte": [
+    "Reconhece diferentes manifestações artísticas e culturais.",
+    "Expressa ideias e sentimentos por meio da arte.",
+    "Participa de atividades práticas e criativas."
+  ],
+  "Educação Física": [
+    "Compreende a importância das práticas corporais para a saúde.",
+    "Participa de jogos, brincadeiras e práticas esportivas.",
+    "Respeita regras, limites e diferenças individuais."
+  ]
+};
+const levels = {C:"Consolidada",ED:"Em desenvolvimento",NC:"Não consolidada",NO:"Não observado"};
+const social = [
+  "Participa das atividades propostas.", "Demonstra interesse e envolvimento nas aulas.",
+  "Realiza as atividades e entrega as tarefas.", "Mantém frequência e pontualidade adequadas.",
+  "Demonstra autonomia na realização das atividades.", "Respeita professores, colegas e funcionários.",
+  "Trabalha em equipe e coopera com os colegas.", "Cuida dos materiais e do patrimônio escolar.",
+  "Demonstra responsabilidade com sua aprendizagem."
+];
+const interventions = [
+  "Reforço e recuperação da aprendizagem.", "Atividades diferenciadas e individualizadas.",
+  "Recomposição das aprendizagens essenciais.", "Acompanhamento pedagógico sistemático.",
+  "Atividades de leitura e interpretação textual.", "Atividades de raciocínio lógico e resolução de problemas.",
+  "Atendimento individualizado pelo professor.", "Contato e orientação à família.",
+  "Avaliação da necessidade de outras estratégias de apoio."
+];
+const fields = {
+  avancos:"Principais avanços", dificuldades:"Principais dificuldades de aprendizagem",
+  prioridades:"Habilidades prioritárias a retomar", outros:"Outros encaminhamentos",
+  metas:"Metas de aprendizagem para o próximo ano letivo", responsaveis:"Responsáveis pelos encaminhamentos",
+  sintese:"Síntese da avaliação e decisões coletivas", professor:"Professor(a) de referência",
+  gestao:"Especialista / Gestão pedagógica", data:"Data do conselho"
+};
+
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>globalThis.crypto?.randomUUID?.()??(Date.now().toString(36)+Math.random().toString(36).slice(2));
+const currentYear=String(new Date().getFullYear());
+const EMPTY=()=>({teachers:[],classes:[],students:[],assessments:{},council:{},conduct:[]});
+const OLDKEY='almirante-barroso-conselho-v1';
+let db=EMPTY(),rev=0,client=null,busy=false,page='prof';
+const panel={cad:{year:currentYear,classId:''},prof:{year:currentYear,teacher:'',classId:'',student:''},dir:{year:currentYear,classId:'',student:''},conduta:{year:currentYear,classId:'',student:''}};
+const options=(list,selected)=>list.map(([v,label])=>`<option value="${esc(v)}" ${String(v)===String(selected)?'selected':''}>${esc(label)}</option>`).join('');
+const select=(name,label,list,selected,placeholder='Selecione')=>`<label>${esc(label)}<select name="${name}">${options([['',placeholder],...list],selected)}</select></label>`;
+const entries=list=>list.map(i=>[i.id,i.name]);
+const sorted=list=>[...list].sort((a,b)=>a.name.localeCompare(b.name,'pt-BR',{numeric:true}));
+const classesFor=s=>sorted(db.classes.filter(c=>c.year===s.year));
+const studentsFor=s=>sorted(db.students.filter(i=>i.classId===s.classId));
+const classEntries=list=>list.map(i=>[i.id,`${i.name} · ${i.shift}`]);
+const years=s=>[...new Set([currentYear,s.year,...db.classes.map(c=>c.year)])].sort().reverse().map(y=>[y,y]);
+const card=(title,body)=>`<section class="card"><h3>${esc(title)}</h3>${body}</section>`;
+const key=s=>[s.student,s.year,'final'].join('/');
+const msg=(txt,error=false)=>{$('message').textContent=txt;$('message').classList.toggle('error',error)};
+const conn=txt=>$('connection').textContent=txt;
+const dirty=()=>!!$('editor').querySelector('form[data-dirty]');
+function canLeave(){return !dirty()||confirm('Há alterações não salvas. Deseja descartá-las?')}
+function normalize(raw){return {...EMPTY(),...raw,teachers:Array.isArray(raw.teachers)?raw.teachers:[],classes:Array.isArray(raw.classes)?raw.classes:[],students:Array.isArray(raw.students)?raw.students:[],assessments:raw.assessments||{},council:raw.council||{},conduct:Array.isArray(raw.conduct)?raw.conduct:[]}}
+async function load(){const {data,error}=await client.rpc('plataforma_ler');if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row)throw Error('Banco não inicializado. Execute o arquivo banco.sql.');db=normalize(row.dados);rev=row.revisao;conn(`● Online · Dados compartilhados · Revisão ${rev}`);render()}
+async function commit(next){if(busy)return false;busy=true;document.querySelectorAll('button').forEach(b=>b.disabled=true);try{const {data,error}=await client.rpc('plataforma_salvar',{p_revisao:rev,p_dados:next});if(error)throw error;if(!data){await load();msg('Outro professor salvou alterações antes de você. Os dados foram atualizados. Confira e refaça sua alteração.',true);return false}db=normalize(next);rev++;conn(`● Online · Dados compartilhados · Revisão ${rev}`);msg('✓ Salvo no banco de dados online.');return true}catch(e){msg('Não foi possível salvar: '+e.message,true);return false}finally{busy=false;document.querySelectorAll('button').forEach(b=>b.disabled=false)}}
+async function init(){const url=window.SITE_CONFIG?.supabaseUrl,key=window.SITE_CONFIG?.supabaseAnonKey;if(!url||!key||url.includes('COLE_')){conn('Configuração pendente: preencha o arquivo config.js para ativar o banco online.');msg('Nenhum dado será salvo enquanto o banco não estiver configurado.',true);render();return}try{client=supabase.createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});await load()}catch(e){conn('Falha na conexão online.');msg(e.message,true);render()}}
+function render(){if(!client){$('controls').innerHTML=card('Instalação pendente','Configure o Supabase em config.js e execute banco.sql.');$('editor').innerHTML='';$('report').innerHTML='';return}$('controls').innerHTML='';$('editor').innerHTML='';$('report').innerHTML='';$('demo-warning').classList.toggle('hide',page!=='conduta');if(page==='cad')renderCad();else if(page==='conduta')renderConduta();else renderSelections()}
+function renderCad(){const s=panel.cad,ts=sorted(db.teachers),cs=classesFor(s),ss=studentsFor(s);$('controls').innerHTML=`<div class="row"><h2>Cadastros</h2><div class="actions"><button id="refresh">Atualizar dados</button><button id="backup">Exportar backup JSON</button><button id="import-old">Importar dados do HTML anterior</button></div></div><p class="muted">Os cadastros são compartilhados entre todos os professores.</p><div class="grid">${card('Professores',`<form data-add="teacher"><label>Nome<input required name="name" placeholder="Nome do professor"></label>${select('subject','Disciplina',Object.keys(subjects).map(v=>[v,v]),'')}<div class="actions"><button class="primary">Cadastrar</button></div></form><small>${ts.length} cadastrado(s)</small>${ts.map(t=>`<div class="item">${esc(t.name)} · ${esc(t.subject)}</div>`).join('')}`)}${card('Turmas',`<form data-add="class"><label>Ano<input type="number" name="year" value="${esc(s.year)}" min="2000" max="2100" required></label><label>Turma<input name="name" required placeholder="6º A"></label>${select('shift','Turno',['Manhã','Tarde','Noite','Integral'].map(v=>[v,v]),'')}<div class="actions"><button class="primary">Cadastrar</button></div></form>${cs.map(c=>`<div class="item">${esc(c.name)} · ${esc(c.shift)}</div>`).join('')}`)}${card('Estudantes',`${select('year','Ano letivo',years(s),s.year,'')}${select('classId','Turma',classEntries(cs),s.classId)}<form data-add="student"><label>Nomes (um por linha)<textarea required name="names" rows="5" placeholder="Cole aqui a lista de alunos"></textarea></label><div class="actions"><button class="primary">Cadastrar estudantes</button></div></form><small>${ss.length} estudante(s) na turma</small>${ss.map(i=>`<div class="item">${esc(i.name)}</div>`).join('')}`)}</div>`}
+function renderSelections(){const s=panel[page],teacher=db.teachers.find(t=>t.id===s.teacher),prof=page==='prof',cs=classesFor(s),ss=studentsFor(s);$('controls').innerHTML=`<h2>${prof?'Área do professor':'Conselho de Classe Final · Direção'}</h2><section class="card grid">${prof?select('teacher','Professor(a)',entries(sorted(db.teachers)).map(([id,name])=>[id,`${name} · ${db.teachers.find(t=>t.id===id)?.subject}`]),s.teacher):''}${!prof||teacher?select('year','Ano letivo',years(s),s.year,'')+select('classId','Turma',classEntries(cs),s.classId):''}${s.classId?select('student','Aluno',entries(ss),s.student):''}</section>`;if(!s.student||!ss.some(i=>i.id===s.student)||prof&&!teacher){$('editor').innerHTML='<p class="muted">Selecione professor, turma e aluno. Cadastre-os primeiro, se necessário.</p>';return}if(prof)renderAssessment(s,teacher);else renderCouncil(s)}
+function renderAssessment(s,teacher){const marks=db.assessments[key(s)]?.[teacher.subject]?.marks||{},codes=Object.keys(levels);$('editor').innerHTML=card(teacher.subject,`<p class="muted">Assinale uma opção por habilidade e salve. C: consolidada; ED: em desenvolvimento; NC: não consolidada; NO: não observada.</p><form data-assessment><div class="scroll"><table class="assessment"><thead><tr><th>Habilidade</th>${codes.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${subjects[teacher.subject].map((skill,i)=>`<tr><th>${esc(skill)}</th>${codes.map(c=>`<td><label><input type="checkbox" name="${i}" value="${c}" ${marks[i]===c?'checked':''} aria-label="${esc(skill)}: ${esc(levels[c])}"></label></td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="actions"><button class="primary">Salvar avaliação</button><output class="save-feedback"></output></div></form>`)}
+const tf=(name,value)=>`<label>${esc(fields[name])}${name==='data'?`<input name="${name}" type="date" value="${esc(value||'')}">`:`<textarea name="${name}" rows="2">${esc(value||'')}</textarea>`}</label>`;
+function renderCouncil(s){const entry=db.council[key(s)]||{};$('editor').innerHTML=`<div class="actions hide-print"><button id="print" class="primary">Imprimir / salvar PDF</button><button id="refresh">Atualizar dados</button></div><details class="card hide-print"><summary>Editar ficha complementar do conselho</summary><form data-council><h3>Aspectos socioemocionais e participação</h3>${social.map((v,i)=>`<label class="skill"><span>${esc(v)}</span><select name="social${i}">${options([['','Sem registro'],...['Sim','Parcialmente','Não'].map(x=>[x,x])],entry['social'+i])}</select></label>`).join('')}<h3>Diagnóstico pedagógico</h3><div class="grid">${['avancos','dificuldades','prioridades'].map(n=>tf(n,entry[n])).join('')}</div><h3>Encaminhamentos e intervenções</h3>${interventions.map((v,i)=>`<label class="check"><input type="checkbox" name="inter${i}" ${entry['inter'+i]?'checked':''}>${esc(v)}</label>`).join('')}<div class="grid">${['outros','metas','responsaveis'].map(n=>tf(n,entry[n])).join('')}</div><h3>Decisões finais</h3>${tf('sintese',entry.sintese)}<div class="grid">${['professor','gestao','data'].map(n=>tf(n,entry[n])).join('')}</div><div class="actions"><button class="primary">Salvar ficha do conselho</button><output class="save-feedback"></output></div></form></details>`;renderReport(s)}
+const table=(a,b,rows)=>`<div class="scroll"><table class="report-table"><thead><tr><th>${esc(a)}</th><th>${esc(b)}</th></tr></thead><tbody>${rows.map(([x,y])=>`<tr><td>${esc(x)}</td><td>${esc(y)}</td></tr>`).join('')}</tbody></table></div>`;
+function renderReport(s){const st=db.students.find(i=>i.id===s.student),cl=db.classes.find(i=>i.id===s.classId);if(!st||!cl)return;const assessments=db.assessments[key(s)]||{},entry=db.council[key(s)]||{},section=[];for(const [sub,skills] of Object.entries(subjects)){const item=assessments[sub];if(!item)continue;const rows=skills.flatMap((skill,i)=>item.marks?.[i]?[[skill,`${item.marks[i]} · ${levels[item.marks[i]]||''}`]]:[]);if(rows.length)section.push(card(sub,`<p class="muted">Professor(a): ${esc(item.teacher||'')}</p>${table('Habilidade','Avaliação',rows)}`))}const socio=social.flatMap((v,i)=>entry['social'+i]?[[v,entry['social'+i]]]:[]),chosen=interventions.filter((_,i)=>entry['inter'+i]);const paragraphs=names=>names.filter(n=>entry[n]).map(n=>`<p class="report-text"><strong>${esc(fields[n])}</strong>\n${esc(n==='data'?entry[n].split('-').reverse().join('/'):entry[n])}</p>`).join('');const demo=db.conduct.filter(r=>r.studentId===s.student&&r.year===s.year);$('report').innerHTML=`<section class="card"><small>Escola Municipal Almirante Barroso · Conselho de Classe Final</small><h2>${esc(st.name)}</h2><p>${esc(cl.name)} · ${esc(cl.shift)} · ${esc(s.year)}</p><p class="muted">${section.length} disciplina(s) com avaliações salvas</p></section>${section.join('')}${socio.length?card('Aspectos socioemocionais e participação',table('Aspecto','Registro',socio)):''}${paragraphs(['avancos','dificuldades','prioridades'])?card('Diagnóstico pedagógico',paragraphs(['avancos','dificuldades','prioridades'])):''}${chosen.length||paragraphs(['outros','metas','responsaveis'])?card('Encaminhamentos',`<ul>${chosen.map(c=>`<li>${esc(c)}</li>`).join('')}</ul>${paragraphs(['outros','metas','responsaveis'])}`):''}${paragraphs(['sintese','professor','gestao','data'])?card('Registro final',paragraphs(['sintese','professor','gestao','data'])):''}<div class="hide-print">${card('Integração futura · Registros de conduta (demonstração)',`<p class="muted">Esta seção mostra somente exemplos fictícios vinculados ao cadastro deste aluno, sem integrar a avaliação pedagógica oficial.</p>${demo.length?table('Data','Exemplo fictício',demo.map(r=>[r.date,`${r.fact} · ${r.action}`])):'<p>Nenhum exemplo de conduta demonstrativo vinculado.</p>'}`)}`}
+const facts=['Conversou durante a explicação, após orientação.','Chegou à aula após o horário previsto.','Utilizou celular fora da atividade combinada.','Interrompeu repetidamente a atividade dos colegas.'];
+const acts=['Orientação verbal','Segunda orientação','Apoio individual','Encaminhamento à coordenação'];
+function renderConduta(){const s=panel.conduta,cs=classesFor(s),ss=studentsFor(s);$('controls').innerHTML=`<h2>Registros de conduta · Apresentação para 2027</h2><p class="demo">Esta área é apenas ilustrativa. Não registre episódios reais, observações sensíveis ou dados disciplinares aqui.</p><section class="card grid">${select('year','Ano',years(s),s.year,'')}${select('classId','Turma',classEntries(cs),s.classId)}${s.classId?select('student','Aluno',entries(ss),s.student):''}</section>`;if(!s.student||!ss.some(i=>i.id===s.student))return;$('editor').innerHTML=card('Criar exemplo fictício',`<form data-conduct><label>Data simulada<input name="date" type="date" required value="${new Date().toISOString().slice(0,10)}"></label>${select('fact','Situação fictícia',facts.map(v=>[v,v]),'')}${select('action','Intervenção exemplificativa',acts.map(v=>[v,v]),'')}<div class="actions"><button class="primary">Salvar exemplo fictício</button></div></form>`);const rows=db.conduct.filter(r=>r.studentId===s.student&&r.year===s.year);$('report').innerHTML=card('Exemplos ligados a este aluno',rows.length?rows.map(r=>`<div class="item"><strong>${esc(r.date)}</strong> · ${esc(r.fact)}<p>${esc(r.action)}</p><small>DEMONSTRAÇÃO · FICTÍCIO</small></div>`).join(''):'<p>Nenhum exemplo registrado ainda.</p>')}
+async function add(kind,fd){const name=(fd.get('name')||'').trim(),lower=v=>v.toLocaleLowerCase('pt-BR').replace(/\s+/g,' '),s=panel.cad;let next=structuredClone(db);if(kind==='teacher'){const subject=fd.get('subject');if(!name||!subject)return msg('Preencha nome e disciplina.',true);if(next.teachers.some(t=>lower(t.name)===lower(name)&&t.subject===subject))return msg('Professor já cadastrado.',true);next.teachers.push({id:uid(),name,subject})}if(kind==='class'){const year=fd.get('year'),shift=fd.get('shift');if(!name||!shift)return msg('Preencha turma e turno.',true);if(next.classes.some(c=>lower(c.name)===lower(name)&&c.year===year&&c.shift===shift))return msg('Turma já cadastrada.',true);const c={id:uid(),name,year,shift};next.classes.push(c);s.year=year;s.classId=c.id}if(kind==='student'){if(!s.classId)return msg('Selecione uma turma.',true);const known=new Set(next.students.filter(i=>i.classId===s.classId).map(i=>lower(i.name)));const names=(fd.get('names')||'').split(/\r?\n/).map(v=>v.trim()).filter(Boolean);for(const nm of names){if(!known.has(lower(nm))){known.add(lower(nm));next.students.push({id:uid(),name:nm,classId:s.classId})}}}if(await commit(next))render()}
+async function storeForm(form){const s=panel[page],fd=new FormData(form),next=structuredClone(db);if(form.matches('[data-assessment]')){const teacher=db.teachers.find(t=>t.id===s.teacher);const marks=Object.fromEntries([...fd].filter(([,v])=>Object.hasOwn(levels,v)));next.assessments[key(s)]={...(next.assessments[key(s)]||{}),[teacher.subject]:{marks,teacher:teacher.name}}}else if(form.matches('[data-council]')){next.council[key(s)]=Object.fromEntries([...fd].map(([n,v])=>[n,String(v).trim()]).filter(([,v])=>v))}else if(form.matches('[data-conduct]')){if(!fd.get('fact')||!fd.get('action'))return msg('Selecione situação e intervenção.',true);next.conduct.push({id:uid(),studentId:s.student,year:s.year,date:fd.get('date'),fact:fd.get('fact'),action:fd.get('action'),fictional:true})}if(await commit(next)){render();msg('✓ Registro salvo online com sucesso.')}}
+function backup(){const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='backup-plataforma-pedagogica.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+async function importOld(){const raw=localStorage.getItem(OLDKEY);if(!raw)return msg('Não encontrei dados do conselho antigo neste navegador. A importação só funciona onde os dados antigos foram salvos.',true);if(db.students.length||db.teachers.length)return msg('Por segurança, importe apenas em um banco vazio para evitar substituir cadastros.',true);if(!confirm('Importar os dados locais do antigo conselho para o banco online?'))return;try{const old=JSON.parse(raw);const next=normalize(old);if(await commit(next))render()}catch(e){msg('Falha na importação: '+e.message,true)}}
+document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('[data-page]');if(!b||b.dataset.page===page||!canLeave())return;document.querySelector('[aria-current="page"]').removeAttribute('aria-current');b.setAttribute('aria-current','page');page=b.dataset.page;msg('');render()});
+$('controls').addEventListener('change',e=>{const {name,value}=e.target,s=panel[page];if(!(name in s)||e.target.closest('form'))return;if(!canLeave()){e.target.value=s[name];return}s[name]=value;if(name==='year')s.classId='';if(['classId','year'].includes(name)&&'student'in s)s.student='';msg('');render()});
+$('controls').addEventListener('submit',async e=>{e.preventDefault();await add(e.target.dataset.add,new FormData(e.target))});
+$('controls').addEventListener('click',async e=>{if(e.target.id==='backup')backup();if(e.target.id==='import-old')await importOld();if(e.target.id==='refresh'&&!dirty()){await load();msg('Dados atualizados.')}});
+$('editor').addEventListener('change',e=>{const box=e.target;if(!box.matches('[data-assessment] input[type=checkbox]')||!box.checked)return;box.closest('tr').querySelectorAll('input').forEach(other=>{if(other!==box)other.checked=false})});
+$('editor').addEventListener('input',e=>{const form=e.target.closest('form');if(form){form.dataset.dirty='1';msg('Alterações pendentes. Clique em salvar.')}});
+$('editor').addEventListener('submit',async e=>{e.preventDefault();await storeForm(e.target)});
+$('editor').addEventListener('click',async e=>{if(e.target.id==='print'){if(dirty())return msg('Salve suas alterações antes de imprimir.',true);window.print()}if(e.target.id==='refresh'&&!dirty()){await load();msg('Dados atualizados.')}});
+window.addEventListener('beforeunload',e=>{if(dirty()){e.preventDefault();e.returnValue=''}});
+init();
+</script></body></html>
